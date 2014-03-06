@@ -11,6 +11,12 @@ var southwest = 7;
 // are we allowed to move diagonally?
 var diagonal = 0;
 
+// the "cost" of one move
+var move_weight = 1;
+
+// the "attractiveness" of tiles closer to the target
+var heuristic_weight = 2.5;
+
 /*
  * Astar Singleton
  */
@@ -152,6 +158,7 @@ AstarCell.prototype.distanceFrom = function(cell)
 //     return Math.abs(this.x - cell.x) + Math.abs(this.y - cell.y);
     // squared euclidean distance
 //     return Math.pow(this.x - cell.x, 2) + Math.pow(this.y - cell.y, 2);
+    // euclidean distance
     return Math.sqrt(Math.pow(this.x - cell.x, 2) + Math.pow(this.y - cell.y, 2));
 };
 
@@ -219,11 +226,11 @@ function Pathing(cell, parent) {
 
     this.parent = parent;
     if (parent)
-        this.move_cost = parent.move_cost + 1;
+        this.move_cost = parent.move_cost + move_weight;
     else
         this.move_cost = 0;
 
-    this.heuristic = cell.distanceFrom(astar.player.cell) * 2;
+    this.heuristic = cell.distanceFrom(astar.player.cell) * heuristic_weight;
     this.tot_cost  = this.move_cost + this.heuristic;
 
     this.isopen = true;
