@@ -77,16 +77,25 @@ Astar.prototype.tick = function(self) {
 
             for (var i = 0; i < p.cell.neighbour.length; i++)
             {
-                if (p.cell.neighbour[i])
+                var q = p.cell.neighbour[i];
+                if (q && !q.obstacle)
                 {
-                    if (!p.cell.neighbour[i].pathing && !p.cell.neighbour[i].obstacle)
+                    if (q.pathing)
                     {
-                        var q = new Pathing(p.cell.neighbour[i], p);
+                        if (p.move_cost + move_weight < q.pathing.move_cost)
+                        {
+                            q.pathing.move_cost = p.move_cost + move_weight;
+                            q.pathing.tot_cost = q.pathing.move_cost + q.pathing.heuristic;
+                            q.pathing.parent = p;
+                        }
+                    }
+                    else {
+                        var g = new Pathing(q, p);
 
                         if (self.openList.length == 0)
-                            self.openList.push(q);
+                            self.openList.push(g);
                         else {
-                            self.openList.splice(Math.abs(self.openList.binaryIndexOf(q)), 0, q);
+                            self.openList.splice(Math.abs(self.openList.binaryIndexOf(g)), 0, g);
                         }
                     }
                 }
