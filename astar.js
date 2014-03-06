@@ -15,7 +15,7 @@ var diagonal = 0;
 var move_weight = 1;
 
 // the "attractiveness" of tiles closer to the target
-var heuristic_weight = 2.5;
+var heuristic_weight = 5;
 
 /*
  * Astar Singleton
@@ -25,6 +25,7 @@ function Astar() {
     self = this;
     this.openList = new Array();
     this.closedList = new Array();
+    this.path = new Array();
 };
 
 Astar.prototype.player = null;
@@ -39,10 +40,11 @@ Astar.prototype.beginPathing = function(target) {
         this.openList.pop().destroy();
     while (this.closedList.length)
         this.closedList.pop().destroy();
+    this.path.length = 0;
 
     this.target = target;
 
-    this.openList.push(new Pathing(target, null));
+    this.openList.push(new Pathing(self.player.cell, null));
 };
 
 Astar.prototype.tick = function(self) {
@@ -54,8 +56,7 @@ Astar.prototype.tick = function(self) {
             p.close();
             self.closedList.push(p);
 
-            console.log(self.player.cell.distanceFrom(p.cell) + " // " + p.cell.toString() + " | " + p.toString);
-            if (self.player.cell.distanceFrom(p.cell) == 0)
+            if (self.target.distanceFrom(p.cell) == 0)
             {
                 while (self.openList.length)
                 {
@@ -64,9 +65,10 @@ Astar.prototype.tick = function(self) {
                     self.closedList.push(q);
                 }
 
-                var q = self.player.cell.pathing;
-                while (q.cell.distanceFrom(self.target))
+                var q = self.target.pathing;
+                while (!(q.cell === self.player.cell))
                 {
+                    self.path.push(q.cell);
                     q.cell.td.className = "path";
                     q.cell.td.style.backgroundColor = "";
                     q = q.parent;
@@ -84,9 +86,9 @@ Astar.prototype.tick = function(self) {
                     {
                         if (p.move_cost + move_weight < q.pathing.move_cost)
                         {
-                            q.pathing.move_cost = p.move_cost + move_weight;
-                            q.pathing.tot_cost = q.pathing.move_cost + q.pathing.heuristic;
+                            q.pathing.update_cost(p.move_cost + move_weight)
                             q.pathing.parent = p;
+                            self.openList.sort(function(a, b) { return a.tot_cost - b.tot_cost });
                         }
                     }
                     else {
@@ -104,10 +106,10 @@ Astar.prototype.tick = function(self) {
             if (self.openList.length == 0)
                 alert("Could not find path");
         }
-        else if (self.player.cell.pathing) {
-            var q = self.player.cell.pathing.parent;
-            if (q && q.cell)
-                self.player.moveTo(q.cell);
+        else if (self.path.length) {
+            var q = self.path.pop();
+            if (q)
+                self.player.moveTo(q);
         }
     }
 };
@@ -164,11 +166,11 @@ AstarCell.prototype.toString = function() {
 AstarCell.prototype.distanceFrom = function(cell)
 {
     // manhattan distance
-//     return Math.abs(this.x - cell.x) + Math.abs(this.y - cell.y);
+    return Math.abs(this.x - cell.x) + Math.abs(this.y - cell.y);
     // squared euclidean distance
 //     return Math.pow(this.x - cell.x, 2) + Math.pow(this.y - cell.y, 2);
     // euclidean distance
-    return Math.sqrt(Math.pow(this.x - cell.x, 2) + Math.pow(this.y - cell.y, 2));
+//     return Math.sqrt(Math.pow(this.x - cell.x, 2) + Math.pow(this.y - cell.y, 2));
 };
 
 AstarCell.prototype.update = function() {
@@ -239,8 +241,8 @@ function Pathing(cell, parent) {
     else
         this.move_cost = 0;
 
-    this.heuristic = cell.distanceFrom(astar.player.cell) * heuristic_weight;
-    this.tot_cost  = this.move_cost + this.heuristic;
+    this.heuristic = cell.distanceFrom(astar.target) * heuristic_weight;
+    this.update_cost();
 
     this.isopen = true;
 
@@ -266,6 +268,14 @@ Pathing.prototype.describe = function() {
     if (this.parent)
         desc += "parent: " + this.parent.cell + "|" + this.parent + "<br>\n";
     return desc;
+};
+
+Pathing.prototype.update_cost = function(move, heuristic)
+{
+    this.move_cost = move || this.move_cost;
+    this.heuristic = heuristic || this.heuristic;
+
+    this.tot_cost = this.heuristic * 10 + this.move_cost;
 };
 
 Pathing.prototype.valueOf = function() {
@@ -402,5 +412,5 @@ $(document).ready(function(){
     astar.player = player;
     astar.cells = cells;
 
-    astar.timer = window.setInterval(astar.tick, 100, astar);
+    astar.timer = window.setInterval(astar.tick, 25, astar);
 });
