@@ -1,0 +1,35 @@
+td {
+    background-color: #DDF;
+    width: 10px;
+    height: 10px;
+}
+
+td.player {
+    background-color: red;
+}
+
+td.obstacle {
+    background-color: black;
+}
+
+td.path {
+    background-color: #FF0080 !important;
+}
+
+td.path_open {
+    background-color: #00FF80;
+}
+
+td.path_closed {
+    background-color: #00CC80;
+}
+
+td:hover {
+    background-color: green;
+}
+
+td#infopane {
+    background-color: #EEF;
+    width: auto;
+    height: auto;
+}
