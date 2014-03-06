@@ -364,7 +364,7 @@ $(document).ready(function(){
                 cells[i][j-1].neighbour[east] = cells[i][j  ];
             }
 
-            if (Math.random() < 0.25)
+            if (Math.random() < 0.3)
             {
                 td.acell.becomeObstacle();
             }
@@ -399,5 +399,5 @@ $(document).ready(function(){
     astar.player = player;
     astar.cells = cells;
 
-    astar.timer = window.setInterval(astar.tick, 500, astar);
+    astar.timer = window.setInterval(astar.tick, 100, astar);
 });
