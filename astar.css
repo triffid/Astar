@@ -5,7 +5,7 @@ td {
 }
 
 td.player {
-    background-color: red;
+    background-color: red !important;
 }
 
 td.obstacle {

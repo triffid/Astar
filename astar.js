@@ -42,30 +42,6 @@ Astar.prototype.beginPathing = function(target) {
 Astar.prototype.tick = function(self) {
     if ("target" in self)
     {
-//         if (self.target.distanceFrom(self.player.cell) > 0)
-//         {
-//             var bestdir = -1;
-//             var dist = self.player.cell.distanceFrom(self.target);
-//             for (var i = 0; i < (diagonal?8:4); i++)
-//             {
-//                 if (self.player.cell.neighbour[i])
-//                 {
-//                     if (!self.player.cell.neighbour[i].obstacle)
-//                     {
-//                         var d = self.player.cell.neighbour[i].distanceFrom(self.target);
-//                         if (d < dist)
-//                         {
-//                             bestdir = i;
-//                             dist = d;
-//                         }
-//                     }
-//                 }
-//             }
-//             if (bestdir >= 0)
-//             {
-//                 self.player.moveTo(self.player.cell.neighbour[bestdir]);
-//             }
-//         }
         if (self.openList.length)
         {
             var p = self.openList.shift();
@@ -109,6 +85,14 @@ Astar.prototype.tick = function(self) {
                     }
                 }
             }
+
+            if (self.openList.length == 0)
+                alert("Could not find path");
+        }
+        else if (self.player.cell.pathing) {
+            var q = self.player.cell.pathing.parent;
+            if (q && q.cell)
+                self.player.moveTo(q.cell);
         }
     }
 };
@@ -214,6 +198,9 @@ Player.prototype.toString = function() {
 
 Player.prototype.moveTo = function(cell)
 {
+    if (cell.obstacle)
+        return;
+
     this.cell.player = null;
     this.cell.update();
 
