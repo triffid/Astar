@@ -9,7 +9,7 @@ var southeast = 6;
 var southwest = 7;
 
 // are we allowed to move diagonally?
-var diagonal = 0;
+var diagonal = 1;
 
 // the "cost" of one move
 var move_weight = 1;
@@ -18,8 +18,8 @@ var move_weight = 1;
 var heuristic_weight = 5;
 
 // size of the grid
-var ncol = 50;
-var nrow = 50;
+var ncol = 120;
+var nrow = 80;
 
 /*
  * Astar Singleton
@@ -389,7 +389,7 @@ $(document).ready(function(){
 
             if (Math.random() < 0.02)
             {
-                cells[i][j].becomeObstacle(Math.random() * 20);
+                cells[i][j].becomeObstacle(Math.random() * 5);
                 obstacles.push(cells[i][j]);
             }
 
@@ -424,19 +424,21 @@ $(document).ready(function(){
         var n_o = new Array();
         for (var i = 0; i < o.neighbour.length; i++)
         {
-            if (o.neighbour[i] && !o.neighbour[i].obstacle)
+            if ((o.neighbour[i]) && (!o.neighbour[i].obstacle))
                 n_o.push(o.neighbour[i]);
         }
 
-        while (n_o.length)
+        if (n_o.length)
         {
-            var q = n_o.pop();
-            var gr = Math.random() * o.chanceToGrow;
+            while ((n_o.length > 1) && (Math.random() >= o.chanceToGrow))
+                n_o.splice((n_o.length * Math.random()) | 0, 1);
 
-            if (gr > 1)
+            for (var i = 0; i < n_o.length; i++)
             {
-                q.becomeObstacle(gr - 1, o);
-                obstacles.push(q);
+                var q = n_o[i];
+                q.becomeObstacle(o.chanceToGrow / n_o.length, o);
+                if (q.chanceToGrow > Math.random())
+                    obstacles.push(q);
             }
         }
     }
@@ -444,11 +446,11 @@ $(document).ready(function(){
     table.appendChild(tbody);
     $("body")[0].appendChild(table);
 
-    var player = new Player(cells[25][25]);
+    var player = new Player(cells[nrow >> 1][ncol >> 1]);
 
     astar.target = player.cell;
     astar.player = player;
     astar.cells = cells;
 
-    astar.timer = window.setInterval(astar.tick, 25, astar);
+    astar.timer = window.setInterval(astar.tick, 10, astar);
 });
