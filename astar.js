@@ -84,9 +84,9 @@ Astar.prototype.tick = function(self) {
                 {
                     if (q.pathing)
                     {
-                        if (p.move_cost + move_weight < q.pathing.move_cost)
+                        if ((p.move_cost + move_weight) < q.pathing.move_cost)
                         {
-                            q.pathing.update_cost(p.move_cost + move_weight)
+                            q.pathing.update_cost(p.move_cost + move_weight);
                             q.pathing.parent = p;
                             self.openList.sort(function(a, b) { return a.tot_cost - b.tot_cost });
                         }
@@ -166,11 +166,11 @@ AstarCell.prototype.toString = function() {
 AstarCell.prototype.distanceFrom = function(cell)
 {
     // manhattan distance
-    return Math.abs(this.x - cell.x) + Math.abs(this.y - cell.y);
+//     return Math.abs(this.x - cell.x) + Math.abs(this.y - cell.y);
     // squared euclidean distance
 //     return Math.pow(this.x - cell.x, 2) + Math.pow(this.y - cell.y, 2);
     // euclidean distance
-//     return Math.sqrt(Math.pow(this.x - cell.x, 2) + Math.pow(this.y - cell.y, 2));
+    return Math.sqrt(Math.pow(this.x - cell.x, 2) + Math.pow(this.y - cell.y, 2));
 };
 
 AstarCell.prototype.update = function() {
@@ -184,7 +184,7 @@ AstarCell.prototype.update = function() {
     }
     else if (this.pathing) {
         this.td.className = this.pathing.className();
-        var col = this.pathing.tot_cost * 5;
+        var col = this.pathing.tot_cost * (255 / 4000);
         if (col > 255)
             col = 255;
         if (col < 0)
@@ -295,9 +295,10 @@ Pathing.prototype.destroy = function() {
  * binaryIndexOf.call(someArray, searchElement);
  *
  * @param {*} searchElement The item to search for within the array.
- * @return {Number} The index of the element which defaults to -1 when not found.
+ * @return {Number} The index of the element. If the element is not found, returns *negative* index of suggested insertion index
+ *
+ * from http://oli.me.uk/2013/06/08/searching-javascript-arrays-with-a-binary-search/
  */
-// from http://oli.me.uk/2013/06/08/searching-javascript-arrays-with-a-binary-search/
 function binaryIndexOf(searchElement) {
     'use strict';
 
@@ -308,7 +309,7 @@ function binaryIndexOf(searchElement) {
     var resultIndex;
 
     while (minIndex <= maxIndex) {
-        resultIndex = currentIndex = (minIndex + maxIndex) / 2 | 0;
+        resultIndex = currentIndex = (minIndex + maxIndex) >> 1;
         currentElement = this[currentIndex];
 
         if (currentElement < searchElement) {
@@ -377,7 +378,7 @@ $(document).ready(function(){
                 cells[i][j-1].neighbour[east] = cells[i][j  ];
             }
 
-            if (Math.random() < 0.3)
+            if (Math.random() < 0.35)
             {
                 td.acell.becomeObstacle();
             }
