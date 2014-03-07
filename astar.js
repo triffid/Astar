@@ -17,6 +17,10 @@ var move_weight = 1;
 // the "attractiveness" of tiles closer to the target
 var heuristic_weight = 5;
 
+// size of the grid
+var ncol = 50;
+var nrow = 50;
+
 /*
  * Astar Singleton
  */
@@ -154,8 +158,11 @@ AstarCell.prototype.onclick = function(self) {
     astar.beginPathing(self);
 };
 
-AstarCell.prototype.becomeObstacle = function() {
+AstarCell.prototype.becomeObstacle = function(chanceToGrow, seed) {
     this.obstacle = true;
+    this.chanceToGrow = chanceToGrow;
+    this.seed = seed || this;
+    this.origin = this.seed.origin || this;
     this.td.className = "obstacle";
 };
 
@@ -343,9 +350,11 @@ $(document).ready(function(){
 
     var tbody = document.createElement("tbody");
 
-    var ncol = 50;
-    var nrow = 50;
+    var obstacles = new Array();
 
+    /*
+     * generate grid with a few obstacle blocks in it
+     */
     for (var i = 0; i < nrow; i++)
     {
         cells[i] = new Array();
@@ -378,9 +387,10 @@ $(document).ready(function(){
                 cells[i][j-1].neighbour[east] = cells[i][j  ];
             }
 
-            if (Math.random() < 0.35)
+            if (Math.random() < 0.02)
             {
-                td.acell.becomeObstacle();
+                cells[i][j].becomeObstacle(Math.random() * 20);
+                obstacles.push(cells[i][j]);
             }
 
             td.appendChild(document.createTextNode('\u0020'));
@@ -402,6 +412,33 @@ $(document).ready(function(){
             tr.appendChild(td);
         }
         tbody.appendChild(tr);
+    }
+
+    /*
+     * grow obstacle blocks
+     */
+    while (obstacles.length)
+    {
+        var o = obstacles.pop();
+
+        var n_o = new Array();
+        for (var i = 0; i < o.neighbour.length; i++)
+        {
+            if (o.neighbour[i] && !o.neighbour[i].obstacle)
+                n_o.push(o.neighbour[i]);
+        }
+
+        while (n_o.length)
+        {
+            var q = n_o.pop();
+            var gr = Math.random() * o.chanceToGrow;
+
+            if (gr > 1)
+            {
+                q.becomeObstacle(gr - 1, o);
+                obstacles.push(q);
+            }
+        }
     }
 
     table.appendChild(tbody);
